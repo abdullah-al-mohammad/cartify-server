@@ -5,7 +5,6 @@ const cors = require('cors')
 const port = process.env.PORT || 5000
 const { MongoClient, ServerApiVersion, ObjectId, ReturnDocument } = require('mongodb');
 var jwt = require('jsonwebtoken');
-const { log } = require('console')
 
 // middleware
 app.use(cors())
@@ -244,10 +243,15 @@ async function run() {
 
 				let query = {};
 
-				if (startDate || endDate) {
-					query.createdAt = {};
-					if (startDate) query.createdAt.$gte = new Date(startDate);
-					if (endDate) query.createdAt.$lte = new Date(endDate);
+				if (startDate && endDate) {
+					query.createdAt = {
+						$gte: new Date(startDate),
+						$lte: new Date(endDate)
+					};
+				} else if (startDate) {
+					query.createdAt = { $gte: new Date(startDate) };
+				} else if (endDate) {
+					query.createdAt = { $lte: new Date(endDate) };
 				}
 
 				const orders = await orderCollection.find(query).toArray();

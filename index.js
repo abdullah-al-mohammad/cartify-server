@@ -3,7 +3,7 @@ require('dotenv').config()
 const app = express()
 const cors = require('cors')
 const port = process.env.PORT || 5000
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId, ReturnDocument } = require('mongodb');
 var jwt = require('jsonwebtoken');
 const { log } = require('console')
 
@@ -198,10 +198,41 @@ async function run() {
 			}
 		});
 
+		app.patch("/products/:id",verifyToken,verifyAdmin,async (req, res) => {
+			try {
+				const { id } = req.params;
+				const updateFields = {}
+				  if (req.body.stockStatus !== undefined)
+						updateFields.stockStatus = req.body.stockStatus;
+					if (req.body.status !== undefined)
+						updateFields.status = req.body.status;
+				const query = { _id: new ObjectId(id) }
+				const field = { $set: updateFields }
+				const newDocument = {ReturnDocument: "after"}
+				const result = await productCollection.findOneAndUpdate(
+					query,
+					field,
+					newDocument
+				);
+				console.log(result);
+				
+				 if (!result.value) {
+						return res.status(404).json({ message: "Product not found" });
+				}
+				res.send(result)
+			 } catch {
+				res.status(500).json({ error: err.message });
+			}
+		})
+
 		app.post("/products",verifyToken,verifyAdmin, async (req, res) => {
-			const products = req.body;
-			const result = await productCollection.insertOne(products);
-			console.log(result);
+			const product = req.body;
+			// finalPrice calculate
+			const price = Number(product.price) || 0;
+			const discount = Number(product.discount) || 0;
+			product.finalPrice = price - (price * discount) / 100;
+
+			const result = await productCollection.insertOne(product);
 
 			res.send(result);
 		});
@@ -247,6 +278,8 @@ async function run() {
 
 		app.post("/orders",verifyToken, (req, res) => {
 			const orders = req.body;
+			console.log(orders);
+			
 			const result = orderCollection.insertOne(orders);
 			return res.send(result);
 		});

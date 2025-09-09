@@ -7,6 +7,9 @@ const port = process.env.PORT || 5000
 
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
+const orderRoutes = require("./routes/orderRoutes");
+const { notFound, errorHandler } = require("./middlewares/errorMiddleware");
+
 
 // middleware
 app.use(cors())

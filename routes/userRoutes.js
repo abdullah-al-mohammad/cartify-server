@@ -8,18 +8,19 @@ const router = express.Router();
 const userCollection = () => getCollection("customerDb", "users");
 
 // JWT
-router.post("/jwt", async (req, res, next) => {
+router.post("/jwt", async (req, res) => {
 	try {
 		const user = req.body;
 		const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
-		res.json({ token });
+		
+		res.send({ token });
 	} catch (err) {
-		next(err);
+		// next(err);
 	}
 });
 
 // Create user
-router.post("/", verifyToken, async (req, res, next) => {
+router.post("/", async (req, res, next) => {
 	try {
 		const user = req.body;
 		const existing = await userCollection().findOne({ email: user.email });
@@ -29,7 +30,7 @@ router.post("/", verifyToken, async (req, res, next) => {
 		const result = await userCollection().insertOne(newUser);
 		res.json(result);
 	} catch (err) {
-		next(err);
+		// next(err);
 	}
 });
 

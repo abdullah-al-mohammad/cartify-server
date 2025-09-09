@@ -3,6 +3,8 @@ const { getCollection } = require("../config/db");
 
 const verifyToken = (req, res, next) => {
 	const authHeader = req.headers.authorization;
+	
+	
 	if (!authHeader)
 		return res.status(401).json({ message: "Unauthorized: No token provided" });
 

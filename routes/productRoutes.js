@@ -7,7 +7,7 @@ const router = express.Router();
 const productCollection = () => getCollection("productDB", "product");
 
 // Get all products (with discount calculation)
-router.get("/", async (req, res, next) => {
+router.get("/", async (req, res) => {
 	try {
 		const products = await productCollection().find().toArray();
 
@@ -19,12 +19,12 @@ router.get("/", async (req, res, next) => {
 
 		res.json(productsWithDiscount);
 	} catch (err) {
-		next(err);
+		res.status(500).json({ error: err.message });
 	}
 });
 
 // Get single product
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", async (req, res) => {
 	try {
 		const product = await productCollection().findOne({
 			_id: new ObjectId(req.params.id)
@@ -32,12 +32,12 @@ router.get("/:id", async (req, res, next) => {
 		if (!product) return res.status(404).json({ message: "Product not found" });
 		res.json(product);
 	} catch (err) {
-		next(err);
+		res.status(500).json({ error: err.message });
 	}
 });
 
 // Get related products (same category)
-router.get("/:id/related", async (req, res, next) => {
+router.get("/:id/related", async (req, res) => {
 	try {
 		const product = await productCollection().findOne({
 			_id: new ObjectId(req.params.id)
@@ -54,12 +54,12 @@ router.get("/:id/related", async (req, res, next) => {
 
 		res.json(related);
 	} catch (err) {
-		next(err);
+		res.status(500).json({ error: err.message });
 	}
 });
 
 // Create product (Admin only)
-router.post("/", verifyToken, verifyAdmin, async (req, res, next) => {
+router.post("/", verifyToken, verifyAdmin, async (req, res) => {
 	try {
 		const product = req.body;
 		const price = Number(product.price) || 0;
@@ -69,7 +69,7 @@ router.post("/", verifyToken, verifyAdmin, async (req, res, next) => {
 		const result = await productCollection().insertOne(product);
 		res.json(result);
 	} catch (err) {
-		next(err);
+		res.status(500).json({ error: err.message });
 	}
 });
 
